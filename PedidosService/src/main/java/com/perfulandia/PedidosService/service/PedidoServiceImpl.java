@@ -52,13 +52,15 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public ProductoDTO consultarProductoPorId(Long idProducto) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8082/productos/" + idProducto;
+        String url = "http://localhost:8081/api/productos/" + idProducto;
+
         return restTemplate.getForObject(url, ProductoDTO.class);
     }
 
     public UsuarioDTO consultarUsuarioPorId(Long idUsuario) {
         RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8081/usuarios/" + idUsuario; // Cambia el puerto según el de UsuariosService
+        String url = "http://localhost:8083/api/usuarios/" + idUsuario;
+
         return restTemplate.getForObject(url, UsuarioDTO.class);
     }
 }
