@@ -1,5 +1,7 @@
 package com.perfulandia.PedidosService.controller;
 
+import com.perfulandia.PedidosService.dto.ProductoDTO;
+import com.perfulandia.PedidosService.dto.UsuarioDTO;
 import com.perfulandia.PedidosService.model.Pedido;
 import com.perfulandia.PedidosService.service.PedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,5 +51,17 @@ public class PedidoController {
         pedidoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/producto/{id}")
+    public ProductoDTO consultarProducto(@PathVariable Long id) {
+        return pedidoService.consultarProductoPorId(id);
+    }
+
+    @GetMapping("/usuario/{id}")
+    public UsuarioDTO consultarUsuario(@PathVariable Long id) {
+        return pedidoService.consultarUsuarioPorId(id);
+    }
+
+
 }
 

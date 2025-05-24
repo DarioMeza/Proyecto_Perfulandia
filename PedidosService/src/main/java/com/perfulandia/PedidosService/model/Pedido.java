@@ -1,7 +1,4 @@
 package com.perfulandia.PedidosService.model;
-
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,9 +8,9 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "pedidos")
-@Data               // Genera getters, setters, equals, hashCode y toString automáticamente
-@NoArgsConstructor  // Constructor sin argumentos necesario para JPA
-@AllArgsConstructor // Constructor con todos los campos
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Pedido {
 
     @Id
@@ -28,5 +25,5 @@ public class Pedido {
 
     private Double total;
 
+    private Long productoId;  // ✅ Agregado para vincular el pedido con el producto
 }
-

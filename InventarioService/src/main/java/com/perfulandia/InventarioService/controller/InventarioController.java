@@ -1,5 +1,6 @@
 package com.perfulandia.InventarioService.controller;
 
+import com.perfulandia.InventarioService.dto.ProductoDTO;
 import com.perfulandia.InventarioService.model.Inventario;
 import com.perfulandia.InventarioService.service.InventarioService;
 import org.springframework.web.bind.annotation.*;
@@ -40,4 +41,10 @@ public class InventarioController {
     public void eliminar(@PathVariable Long id) {
         inventarioService.eliminar(id);
     }
+
+    @GetMapping("/producto/{id}")
+    public ProductoDTO consultarProducto(@PathVariable Long id) {
+        return inventarioService.consultarProductoPorId(id);
+    }
+
 }

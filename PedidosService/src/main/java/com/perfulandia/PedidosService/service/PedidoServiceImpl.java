@@ -4,6 +4,10 @@ import com.perfulandia.PedidosService.model.Pedido;
 import com.perfulandia.PedidosService.repository.PedidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.perfulandia.PedidosService.dto.ProductoDTO;
+
+import com.perfulandia.PedidosService.dto.UsuarioDTO;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +47,19 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     public void eliminar(Long id) {
         pedidoRepository.deleteById(id);
+    }
+
+    @Override
+    public ProductoDTO consultarProductoPorId(Long idProducto) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8082/productos/" + idProducto;
+        return restTemplate.getForObject(url, ProductoDTO.class);
+    }
+
+    public UsuarioDTO consultarUsuarioPorId(Long idUsuario) {
+        RestTemplate restTemplate = new RestTemplate();
+        String url = "http://localhost:8081/usuarios/" + idUsuario; // Cambia el puerto según el de UsuariosService
+        return restTemplate.getForObject(url, UsuarioDTO.class);
     }
 }
 
