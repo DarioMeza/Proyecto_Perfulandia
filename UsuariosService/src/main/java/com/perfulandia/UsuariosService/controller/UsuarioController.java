@@ -26,6 +26,7 @@ public class UsuarioController {
     @Operation(summary = "Lista todos los usuarios")
     @ApiResponse(responseCode = "200", description = "Lista de usuarios obtenida correctamente")
     public List<Usuario> listar() {
+        
         return usuarioService.obtenerTodos();
     }
 

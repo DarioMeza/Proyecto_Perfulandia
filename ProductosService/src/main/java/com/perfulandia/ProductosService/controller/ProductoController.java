@@ -1,5 +1,6 @@
 package com.perfulandia.ProductosService.controller;
 
+import com.perfulandia.ProductosService.dto.ProductoDTO;
 import com.perfulandia.ProductosService.model.Producto;
 import com.perfulandia.ProductosService.service.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -7,7 +8,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -35,10 +39,18 @@ public class ProductoController {
             @ApiResponse(responseCode = "200", description = "Producto encontrado"),
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
-    public Producto obtenerPorId(
-            @Parameter(description = "ID del producto a buscar", required = true)
-            @PathVariable Long id) {
-        return productoService.obtenerProductoPorId(id).orElse(null);
+    public ResponseEntity<ProductoDTO> obtenerProducto(@PathVariable Long id) {
+        Producto producto = productoService.obtenerProductoPorId(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+
+        ProductoDTO dto = new ProductoDTO(
+                producto.getId(),
+                producto.getNombre(),
+                producto.getPrecio(),
+                producto.getStock()
+        );
+
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
