@@ -8,6 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+
+import java.util.stream.Collectors;
+
 import java.util.List;
 
 @RestController
@@ -62,6 +68,64 @@ public class PedidoController {
         return pedidoService.consultarUsuarioPorId(id);
     }
 
+    // obtener()
+    @GetMapping("/hateoas")
+    public CollectionModel<EntityModel<Pedido>> obtenerTodosConHateoas() {
+        List<Pedido> pedidos = pedidoService.obtenerTodos();
+        List<EntityModel<Pedido>> recursos = pedidos.stream()
+                .map(pedido -> EntityModel.of(pedido,
+                        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerPorIdConHateoas(pedido.getId())).withSelfRel(),
+                        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).actualizarConHateoas(pedido.getId(), null)).withRel("actualizar"),
+                        WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).eliminarConHateoas(pedido.getId())).withRel("eliminar")
+                ))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(recursos,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerTodosConHateoas()).withSelfRel());
+    }
+
+    // obtenerporid()
+    @GetMapping("/hateoas/{id}")
+    public EntityModel<Pedido> obtenerPorIdConHateoas(@PathVariable Long id) {
+        Pedido pedido = pedidoService.obtenerPorId(id).orElse(null);
+        if (pedido == null) return null;
+
+        return EntityModel.of(pedido,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerPorIdConHateoas(id)).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).actualizarConHateoas(id, null)).withRel("actualizar"),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).eliminarConHateoas(id)).withRel("eliminar")
+        );
+    }
+
+    // crear()
+    @PostMapping("/hateoas")
+    public EntityModel<Pedido> crearConHateoas(@RequestBody Pedido pedido) {
+        Pedido nuevo = pedidoService.crear(pedido);
+        return EntityModel.of(nuevo,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerPorIdConHateoas(nuevo.getId())).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerTodosConHateoas()).withRel("todos")
+        );
+    }
+
+
+    // actualizar()
+    @PutMapping("/hateoas/{id}")
+    public EntityModel<Pedido> actualizarConHateoas(@PathVariable Long id, @RequestBody Pedido pedido) {
+        Pedido actualizado = pedidoService.actualizar(id, pedido);
+        return EntityModel.of(actualizado,
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerPorIdConHateoas(id)).withSelfRel(),
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerTodosConHateoas()).withRel("todos")
+        );
+    }
+
+    // eliminar()
+    @DeleteMapping("/hateoas/{id}")
+    public EntityModel<String> eliminarConHateoas(@PathVariable Long id) {
+        pedidoService.eliminar(id);
+        return EntityModel.of("Eliminado con éxito",
+                WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(PedidoController.class).obtenerTodosConHateoas()).withRel("todos")
+        );
+    }
 
 }
 
