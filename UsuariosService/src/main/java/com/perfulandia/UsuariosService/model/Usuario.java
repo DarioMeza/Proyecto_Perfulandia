@@ -4,6 +4,7 @@ package com.perfulandia.UsuariosService.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "usuarios")
 public class Usuario {
 
     @Id
