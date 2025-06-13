@@ -1,5 +1,6 @@
 package com.perfulandia.UsuariosService.controller;
 
+import com.perfulandia.UsuariosService.dto.MensajeRespuesta;
 import com.perfulandia.UsuariosService.model.Usuario;
 import com.perfulandia.UsuariosService.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -131,12 +132,16 @@ public class UsuarioController {
 
     // DELETE /api/usuarios/hateoas/{id}
     @DeleteMapping("/hateoas/{id}")
-    public EntityModel<String> eliminarConHateoas(@PathVariable Long id) {
+    public EntityModel<MensajeRespuesta> eliminarConHateoas(@PathVariable Long id) {
         usuarioService.eliminar(id);
-        return EntityModel.of("Usuario eliminado correctamente",
+        MensajeRespuesta respuesta = new MensajeRespuesta("Usuario eliminado correctamente");
+
+        return EntityModel.of(respuesta,
                 WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(UsuarioController.class).listarConHateoas()).withRel("todos"));
     }
 
-
 }
+
+
+
 
