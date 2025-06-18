@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.hateoas.EntityModel;
@@ -74,11 +75,14 @@ public class InventarioController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Elimina un registro de inventario por ID")
     @ApiResponse(responseCode = "204", description = "Registro eliminado correctamente")
-    public void eliminar(
+    public ResponseEntity<Void> eliminar(
             @Parameter(description = "ID del registro a eliminar", required = true)
             @PathVariable Long id) {
         inventarioService.eliminar(id);
+        return ResponseEntity.noContent().build();  // <-- Aquí va el 204 NO_CONTENT
     }
+
+
 
     @GetMapping("/producto/{id}")
     @Operation(summary = "Consulta información detallada de un producto por ID")
@@ -142,4 +146,5 @@ public class InventarioController {
                 WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(InventarioController.class).listarConHateoas()).withRel("todos")
         );
     }
+
 }
