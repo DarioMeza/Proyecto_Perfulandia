@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.hateoas.EntityModel;
@@ -71,11 +72,14 @@ public class ProductoController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Elimina un producto por ID")
     @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente")
-    public void eliminar(
+    public ResponseEntity<Void> eliminar(
             @Parameter(description = "ID del producto a eliminar", required = true)
             @PathVariable Long id) {
         productoService.eliminarProducto(id);
-    }
+        return ResponseEntity.noContent().build();
+
+
+}
 
     // GET /api/productos/hateoas
     @GetMapping("/hateoas")
