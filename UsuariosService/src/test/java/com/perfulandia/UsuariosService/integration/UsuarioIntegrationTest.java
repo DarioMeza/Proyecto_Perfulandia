@@ -40,7 +40,7 @@ public class UsuarioIntegrationTest {
 
     @Test
     void testCrearUsuarioYListarUsuarios() throws Exception {
-        Usuario nuevoUsuario = new Usuario("Benja", "benja@mail.com", "ADMIN");
+        Usuario nuevoUsuario = new Usuario("Benja", "benja@mail.com", "1234", "ADMIN");
 
         // Crear usuario con POST
         mockMvc.perform(post("/api/usuarios")
@@ -60,7 +60,7 @@ public class UsuarioIntegrationTest {
 
     @Test
     void testObtenerUsuarioPorId() throws Exception {
-        Usuario usuario = new Usuario("Ana", "ana@mail.com", "USER");
+        Usuario usuario = new Usuario("Ana", "ana@mail.com", "1234", "USER");
         usuario = usuarioRepository.save(usuario);
 
         mockMvc.perform(get("/api/usuarios/{id}", usuario.getId()))
@@ -72,7 +72,7 @@ public class UsuarioIntegrationTest {
 
     @Test
     void testEliminarUsuario() throws Exception {
-        Usuario usuario = new Usuario("Carlos", "carlos@mail.com", "USER");
+        Usuario usuario = new Usuario("Carlos", "carlos@mail.com", "1234", "USER");
         usuario = usuarioRepository.save(usuario);
 
         mockMvc.perform(delete("/api/usuarios/{id}", usuario.getId()))
@@ -87,11 +87,11 @@ public class UsuarioIntegrationTest {
     @Test
     void testActualizarUsuario() throws Exception {
         // Primero guardamos un usuario original en la BD
-        Usuario usuarioOriginal = new Usuario("Pedro", "pedro@mail.com", "USER");
+        Usuario usuarioOriginal = new Usuario("Pedro", "pedro@mail.com", "1234", "USER");
         usuarioOriginal = usuarioRepository.save(usuarioOriginal);
 
-        // Datos actualizados para el usuario
-        Usuario usuarioActualizado = new Usuario("Pedro Actualizado", "pedro_actualizado@mail.com", "ADMIN");
+        // Datos actualizados para el usuario (incluye password dummy solo para evitar null)
+        Usuario usuarioActualizado = new Usuario("Pedro Actualizado", "pedro_actualizado@mail.com", "4567", "ADMIN");
 
         // Hacemos la petición PUT para actualizar
         mockMvc.perform(put("/api/usuarios/{id}", usuarioOriginal.getId())

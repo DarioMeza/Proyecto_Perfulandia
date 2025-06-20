@@ -4,8 +4,8 @@ import com.perfulandia.UsuariosService.model.Usuario;
 import com.perfulandia.UsuariosService.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,33 +17,35 @@ import static org.mockito.Mockito.*;
 class UsuarioServiceTest {
 
     private UsuarioRepository usuarioRepository;
+    private PasswordEncoder passwordEncoder;
     private UsuarioService usuarioService;
 
     @BeforeEach
     void setUp() {
-        // Creamos un mock para el repositorio
+        // Mock para repositorio y passwordEncoder
         usuarioRepository = Mockito.mock(UsuarioRepository.class);
-        // Inyectamos el mock al servicio
-        usuarioService = new UsuarioService(usuarioRepository);
+        passwordEncoder = Mockito.mock(PasswordEncoder.class);
+
+        // Inyectamos ambos al servicio
+        usuarioService = new UsuarioService(usuarioRepository, passwordEncoder);
+
+        // Mock para que encode devuelva la misma cadena que recibe
+        when(passwordEncoder.encode(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
     }
 
     @Test
     void obtenerTodos_retornaListaUsuarios() {
-        // Preparar datos simulados
         Usuario u1 = new Usuario("Benja", "benja@mail.com", "ADMIN");
         Usuario u2 = new Usuario("Ana", "ana@mail.com", "USER");
 
         when(usuarioRepository.findAll()).thenReturn(Arrays.asList(u1, u2));
 
-        // Ejecutar método a testear
         List<Usuario> resultado = usuarioService.obtenerTodos();
 
-        // Validar resultados
         assertEquals(2, resultado.size());
         assertEquals("Benja", resultado.get(0).getNombre());
         assertEquals("Ana", resultado.get(1).getNombre());
 
-        // Verificar que findAll fue llamado una vez
         verify(usuarioRepository, times(1)).findAll();
     }
 
@@ -84,6 +86,7 @@ class UsuarioServiceTest {
         assertNotNull(resultado);
         assertEquals("Benja", resultado.getNombre());
 
+        verify(passwordEncoder, times(1)).encode(anyString());
         verify(usuarioRepository, times(1)).save(nuevoUsuario);
     }
 
@@ -126,8 +129,6 @@ class UsuarioServiceTest {
     @Test
     void eliminar_llamaDeleteById() {
         Long id = 1L;
-
-        // No se espera retorno ni excepción
 
         doNothing().when(usuarioRepository).deleteById(id);
 
