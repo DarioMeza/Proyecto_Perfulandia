@@ -1,8 +1,7 @@
 package com.perfulandia.UsuariosService.security;
 
 import com.perfulandia.UsuariosService.model.Usuario;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -18,31 +17,53 @@ public class JwtUtil {
                 .setSubject(usuario.getCorreo())
                 .claim("rol", usuario.getRol())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10h
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 horas
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return getClaims(token).getSubject();
+        } catch (JwtException e) {
+            throw new JwtException("Token inválido al extraer el usuario: " + e.getMessage(), e);
+        }
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        try {
+            String username = extractUsername(token);
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        } catch (JwtException e) {
+            throw new JwtException("Token inválido: " + e.getMessage(), e);
+        }
     }
 
-    private boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+    public Claims getClaims(String token) {
+        try {
+            return Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            throw new JwtException("Token expirado", e);
+        } catch (UnsupportedJwtException e) {
+            throw new JwtException("Token no soportado", e);
+        } catch (MalformedJwtException e) {
+            throw new JwtException("Token mal formado", e);
+        } catch (SignatureException e) {
+            throw new JwtException("Firma del token inválida", e);
+        } catch (IllegalArgumentException e) {
+            throw new JwtException("Token vacío o nulo", e);
+        }
+    }
+
+    public boolean isTokenExpired(String token) {
+        try {
+            Date expiration = getClaims(token).getExpiration();
+            return expiration.before(new Date());
+        } catch (JwtException e) {
+            throw new JwtException("Error al verificar expiración: " + e.getMessage(), e);
+        }
     }
 }
-
