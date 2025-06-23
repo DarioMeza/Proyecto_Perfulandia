@@ -78,6 +78,7 @@ class UsuarioServiceTest {
     @Test
     void crear_usuarioNuevo_retornaUsuarioCreado() {
         Usuario nuevoUsuario = new Usuario("Benja", "benja@mail.com", "ADMIN");
+        nuevoUsuario.setPassword("clave123");
 
         when(usuarioRepository.save(nuevoUsuario)).thenReturn(nuevoUsuario);
 

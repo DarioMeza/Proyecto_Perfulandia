@@ -2,6 +2,7 @@ package com.perfulandia.UsuariosService.integration;
 
 import com.perfulandia.UsuariosService.model.Usuario;
 import com.perfulandia.UsuariosService.repository.UsuarioRepository;
+import com.perfulandia.UsuariosService.security.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,9 +34,20 @@ public class UsuarioIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    private String token;
+
     @BeforeEach
-    void cleanDatabase() {
+    void cleanDatabaseAndGenerateToken() {
         usuarioRepository.deleteAll();
+
+        // Creamos un usuario para autenticación y generamos token
+        Usuario usuarioAuth = new Usuario("Benja", "benja@mail.com", "1234", "ADMIN");
+        usuarioRepository.save(usuarioAuth);
+
+        token = "Bearer " + jwtUtil.generateToken(usuarioAuth);
     }
 
     @Test
@@ -51,10 +63,11 @@ public class UsuarioIntegrationTest {
                 .andExpect(jsonPath("$.correo", is("benja@mail.com")))
                 .andExpect(jsonPath("$.rol", is("ADMIN")));
 
-        // Listar usuarios para validar que se creó el usuario
-        mockMvc.perform(get("/api/usuarios"))
+        // Listar usuarios para validar que se creó el usuario (con token)
+        mockMvc.perform(get("/api/usuarios")
+                        .header("Authorization", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$", hasSize(2))) // Porque ya hay usuarioAuth + nuevoUsuario
                 .andExpect(jsonPath("$[0].nombre", is("Benja")));
     }
 
@@ -63,7 +76,8 @@ public class UsuarioIntegrationTest {
         Usuario usuario = new Usuario("Ana", "ana@mail.com", "1234", "USER");
         usuario = usuarioRepository.save(usuario);
 
-        mockMvc.perform(get("/api/usuarios/{id}", usuario.getId()))
+        mockMvc.perform(get("/api/usuarios/{id}", usuario.getId())
+                        .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nombre", is("Ana")))
                 .andExpect(jsonPath("$.correo", is("ana@mail.com")))
@@ -75,26 +89,26 @@ public class UsuarioIntegrationTest {
         Usuario usuario = new Usuario("Carlos", "carlos@mail.com", "1234", "USER");
         usuario = usuarioRepository.save(usuario);
 
-        mockMvc.perform(delete("/api/usuarios/{id}", usuario.getId()))
+        mockMvc.perform(delete("/api/usuarios/{id}", usuario.getId())
+                        .header("Authorization", token))
                 .andExpect(status().isOk());
 
-        // Validar que la lista está vacía después de eliminar
-        mockMvc.perform(get("/api/usuarios"))
+        // Validar que la lista está vacía después de eliminar (excepto usuarioAuth)
+        mockMvc.perform(get("/api/usuarios")
+                        .header("Authorization", token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 
     @Test
     void testActualizarUsuario() throws Exception {
-        // Primero guardamos un usuario original en la BD
         Usuario usuarioOriginal = new Usuario("Pedro", "pedro@mail.com", "1234", "USER");
         usuarioOriginal = usuarioRepository.save(usuarioOriginal);
 
-        // Datos actualizados para el usuario (incluye password dummy solo para evitar null)
         Usuario usuarioActualizado = new Usuario("Pedro Actualizado", "pedro_actualizado@mail.com", "4567", "ADMIN");
 
-        // Hacemos la petición PUT para actualizar
         mockMvc.perform(put("/api/usuarios/{id}", usuarioOriginal.getId())
+                        .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usuarioActualizado)))
                 .andExpect(status().isOk())
@@ -102,7 +116,6 @@ public class UsuarioIntegrationTest {
                 .andExpect(jsonPath("$.correo", is("pedro_actualizado@mail.com")))
                 .andExpect(jsonPath("$.rol", is("ADMIN")));
 
-        // Validar que en la BD quedó actualizado
         Usuario usuarioEnBd = usuarioRepository.findById(usuarioOriginal.getId()).orElseThrow();
         assert usuarioEnBd.getNombre().equals("Pedro Actualizado");
         assert usuarioEnBd.getCorreo().equals("pedro_actualizado@mail.com");

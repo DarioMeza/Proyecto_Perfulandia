@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UsuarioController.class)
+@AutoConfigureMockMvc(addFilters = false)
 public class UsuarioControllerTest {
 
     @Autowired
@@ -28,8 +30,14 @@ public class UsuarioControllerTest {
     @MockBean
     private UsuarioService usuarioService;
 
+    @MockBean
+    private com.perfulandia.UsuariosService.security.JwtUtil jwtUtil;
+
+    @MockBean
+    private com.perfulandia.UsuariosService.security.JwtRequestFilter jwtRequestFilter;
+
     @Autowired
-    private ObjectMapper objectMapper;  // para convertir objetos a JSON
+    private ObjectMapper objectMapper;
 
     @Test
     void listarUsuarios_retornaLista() throws Exception {
@@ -78,6 +86,6 @@ public class UsuarioControllerTest {
         Mockito.doNothing().when(usuarioService).eliminar(1L);
 
         mockMvc.perform(delete("/api/usuarios/1"))
-                .andExpect(status().isOk()); // en tu controlador no retorna void ni status 204 explícito, usa isOk()
+                .andExpect(status().isOk()); // status 204 si tu endpoint lo devuelve, sino OK está bien
     }
 }
